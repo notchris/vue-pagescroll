@@ -1,15 +1,16 @@
 {
-  "name": "skeleton",
+  "name": "vue-pagescroll",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "start": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "core-js": "^3.8.3",
     "vue": "^2.6.14",
+    "vue-meta": "^2.4.0",
     "vue-router": "^3.5.1"
   },
   "devDependencies": {
