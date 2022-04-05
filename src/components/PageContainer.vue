@@ -5,12 +5,16 @@
 </template>
 
 <script>
+import 'swiped-events/dist/swiped-events.min.js'
 export default {
   name: 'PageContainer',
   data () {
     return {
       wheelEvent: null,
-      canScroll: true
+      touchEvent: null,
+      canScroll: true,
+      canTouch: true,
+      lastYPosition: null
     }
   },
   metaInfo () {
@@ -19,13 +23,29 @@ export default {
     }
   },
   mounted () {
+    /** Check initial route */
     this.checkRoute(this.$route)
-    this.$router.options.scrollBehavior = (to) => {
-        this.checkRoute(to, true)
+
+    /** Vue-router scroll behavior */
+    this.$router.options.scrollBehavior = (to, from, savedPosition) => {
+        if (savedPosition) {
+            this.lastYPosition = savedPosition
+            this.$el.scroll({top: savedPosition,  behavior: 'auto' })
+        } else {
+            this.checkRoute(to, true)
+        }
     }
+
+    /** Desktop Wheel Events */
     this.wheelEvent = document.querySelector('#app').addEventListener('wheel', (e) => {
       this.wheel(e)
     }, {passive: true})
+
+    /** Mobile Touch Events */
+    document.querySelector('#app').addEventListener('swiped', (e) => {
+        this.touch(e)
+    });
+
   },
   computed: {
       routeTitle () {
@@ -42,7 +62,28 @@ export default {
         const routes = this.$router.options.routes
         const routeIndex = routes.findIndex(r => r.name === to.name)
         const position = routeIndex * window.innerHeight
+        this.lastYPosition = position
         this.$el.scroll({top: position,  behavior: smooth ? 'smooth' : 'auto' })
+    },
+    touch (event) {
+        const routes = this.$router.options.routes
+        const cindex = routes.findIndex(r => r.name === this.$route.name)
+
+        if (event.detail.dir === 'down') {
+            if (cindex === 0) {
+                return;
+            } else {
+                let nameFix = routes[cindex - 1].name === 'home' ? '/' : routes[cindex - 1].name
+                this.$router.push({ path: nameFix })
+            }
+        } else if (event.detail.dir === 'up') {
+            if (routes[cindex + 1]) {
+                let nameFix = routes[cindex + 1].name === 'home' ? '/' : routes[cindex + 1].name
+                this.$router.push({ path: nameFix })
+            } else {
+                return;
+            }
+        }
     },
     wheel (event) {
       if (!this.canScroll) return
